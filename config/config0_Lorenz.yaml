@@ -1,0 +1,7 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id: '1-3'  # Example: run on sub-datasets 1 to 3
+model:
+  name: Koopman
+  # Add Koopman model-specific parameters here
+  param1: value1

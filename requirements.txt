@@ -1,0 +1,10 @@
+# Python 3.10 or earlier
+# pyenv install 3.10
+# pyenv local 3.10
+# python -m venv venv
+# source venv/bin/activate
+# pip install --upgrade pip
+# pip install requirements.txt
+numpy
+pykoopman
+pydmd > 0.4, <= 0.4.1
