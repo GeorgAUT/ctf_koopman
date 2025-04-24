@@ -25,8 +25,8 @@ class KoopmanModel:
         # pred_data = np.tile(pred_data, (1, self.prediction_timesteps))
 
 
-        dmd = DMD(svd_rank=10)
-        model = pk.Koopman(regressor=dmd, observables=pk.observables.Polynomial(degree=2))
+        dmd = DMD(svd_rank=20)
+        model = pk.Koopman(regressor=dmd, observables=pk.observables.Polynomial(degree=10))
         # observables = [lambda x, y: x * y, lambda x: x**2]
         # model = pk.Koopman(regressor=dmd, observables=pk.observables.CustomObservables(observables))
 
@@ -36,6 +36,7 @@ class KoopmanModel:
         dt = self.prediction_timesteps[1] - self.prediction_timesteps[0]
         model.fit(self.train_data, dt=dt)
 
+        self.A = model.A
         # Try prediction
         #pred=model.simulate(self.train_data[-1], n_steps=self.prediction_timesteps.shape[0])
 
