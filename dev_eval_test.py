@@ -7,6 +7,9 @@ from ctf4science.data_module import load_dataset, parse_pair_ids, get_prediction
 from ctf4science.eval_module import evaluate, save_results
 from ctf4science.visualization_module import Visualization
 from ctf_koopman import KoopmanModel
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
+from matplotlib import cm
 
 
 def main(config_path):
@@ -50,19 +53,47 @@ def main(config_path):
         # Initialize the model with the config and train_data
         model = KoopmanModel(config, train_data, prediction_timesteps, pair_id)
         
+        model.train()
         
         # Generate predictions
         pred_data = model.predict()
         
         # Plot the first component of pred_data
-        import matplotlib.pyplot as plt
-        plt.figure()
-        plt.plot(pred_data[0], label=f'pair_id {pair_id} - pred_data[0]')
-        plt.title(f'First Component of pred_data for pair_id {pair_id}')
-        plt.xlabel('Time Step')
-        plt.ylabel('Value')
-        plt.legend()
-        plt.show()
+        if config['dataset']['name'] == "ODE_Lorenz":
+            plt.figure()
+            plt.plot(pred_data[0], label=f'pair_id {pair_id} - pred_data[0]')
+            plt.title(f'First Component of pred_data for pair_id {pair_id}')
+            plt.xlabel('Time Step')
+            plt.ylabel('Value')
+            plt.legend()
+
+        elif config['dataset']['name'] == "PDE_KS":
+            # Plotting for Kuramoto-Sivashinsky (KS) equation
+            levels = np.linspace(snaps['KS'].min(), snaps['KS'].max(), 40)
+
+            fig = plt.figure(figsize=(20, 5))
+            gs = gridspec.GridSpec(1, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.2)
+            axs = [fig.add_subplot(gs[i]) for i in range(3)]
+
+            # Plot original data
+            cont = plot_ks(axs[0], snaps['KS'], mesh['KS'], times['KS'], show_ticks=True, levels=levels)
+            axs[0].set_title('Original data')
+
+            # Plot Koopman reconstruction (prediction)
+            plot_ks(axs[1], koop_rec, mesh['KS'], times['KS'], show_ticks=True, levels=levels)
+            axs[1].set_title('Koopman')
+
+            # Plot DMD reconstruction (if available)
+            plot_ks(axs[2], dmd_rec, mesh['KS'], times['KS'], show_ticks=True, levels=levels)
+            axs[2].set_title('DMD')
+
+            cbar_ax = fig.add_subplot(gs[3])
+            fig.colorbar(cont, cax=cbar_ax)
+
+            # Mark training and prediction regions
+            for ax in axs:
+                ax.axvline(times['KS'][cut_train], color='black', linestyle='--')
+                ax.axvline(times['KS'][2*cut_train], color='black', linestyle='--')
 
         K = model.A
 
@@ -73,7 +104,6 @@ def main(config_path):
         fig = plt.figure(figsize=(4,4))
         ax = fig.add_subplot(111)
         ax.plot(evals_cont.real, evals_cont.imag, 'bo', label='estimated',markersize=5)
-        plt.show()
 
 
 
@@ -106,11 +136,14 @@ def main(config_path):
             print("-" * (18 * len(header)))
     else:
         print("No results available.")
+    
+
+    plt.show()
 
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument('config', type=str, help="Path to the configuration file")
     # args = parser.parse_args()
-    main("models/ctf_koopman/config/config0_Lorenz.yaml")
-    # main("models/ctf_koopman/config/config0_KS.yaml")
+    #main("models/ctf_koopman/config/config0_Lorenz.yaml")
+    main("models/ctf_koopman/config/config0_KS.yaml")

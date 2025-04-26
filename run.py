@@ -9,7 +9,7 @@ from ctf4science.visualization_module import Visualization
 from ctf_koopman import KoopmanModel
 
 
-def main(config_path):
+def main(config_path: str):
     # Load configuration
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)
@@ -39,13 +39,13 @@ def main(config_path):
         # Load sub-dataset
         train_data, init_data = load_dataset(dataset_name, pair_id)
 
-        # Load initialization matrix if it exists
-        if init_data is None:
-            # Stack all training matrices to get a single training matrix
-            train_data = np.concatenate(train_data, axis=1)
-        else:
-            # If we are given a burn-in matrix, use it as the training matrix
-            train_data = init_data
+        # # Load initialization matrix if it exists
+        # if init_data is None:
+        #     # Stack all training matrices to get a single training matrix
+        #     train_data = np.concatenate(train_data, axis=1)
+        # else:
+        #     # If we are given a burn-in matrix, use it as the training matrix
+        #     train_data = init_data
         
         # Load metadata (to provide forecast length)
         prediction_timesteps = get_prediction_timesteps(dataset_name, pair_id)
@@ -54,6 +54,8 @@ def main(config_path):
         # Initialize the model with the config and train_data
         model = KoopmanModel(config, train_data, prediction_timesteps, pair_id)
         
+        # Train the model
+        model.train()
         
         # Generate predictions
         pred_data = model.predict()
@@ -85,5 +87,5 @@ if __name__ == "__main__":
     # parser = argparse.ArgumentParser()
     # parser.add_argument('config', type=str, help="Path to the configuration file")
     # args = parser.parse_args()
-    # main("models/ctf_koopman/config/config0_Lorenz.yaml")
+    #main("models/ctf_koopman/config/config0_Lorenz.yaml")
     main("models/ctf_koopman/config/config0_KS.yaml")

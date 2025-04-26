@@ -6,5 +6,5 @@
 # pip install --upgrade pip
 # pip install requirements.txt
 numpy
-pykoopman
 pydmd > 0.4, <= 0.4.1
+pykoopman
