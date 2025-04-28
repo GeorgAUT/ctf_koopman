@@ -1,9 +1,9 @@
 dataset:
   name: PDE_KS
-  pair_id: '1-3'  # Example: run on sub-datasets 1 to 3
+  pair_id: [1]  # Example: run on sub-datasets 1 to 3
 model:
   name: Koopman
   # Add Koopman model-specific parameters here
-  dmd_rank: 10
+  dmd_rank: 3
   observables: "polynomial"
   observables_degree: 2
