@@ -1,6 +1,6 @@
 dataset:
   name: PDE_KS
-  pair_id: 9  # Example: run on sub-datasets 1 to 3
+  pair_id: 8-9  # Example: run on sub-datasets 1 to 3
 model:
   name: Koopman
   # Add Koopman model-specific parameters here

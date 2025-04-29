@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import pykoopman as pk
 from pydmd import DMD
 import copy
+from numpy.polynomial.polynomial import polyfit, polyval # For polynomial fitting in parametric case
 
 class KoopmanModel:
     def __init__(self, config: Dict, train_data: Optional[np.ndarray] = None, init_data: Optional[np.ndarray] = None, training_timesteps: Optional[np.ndarray] = None, prediction_timesteps: Optional[np.ndarray] = None, pair_id: Optional[int] = None):
@@ -100,11 +101,11 @@ class KoopmanModel:
             pkobservables3 = copy.deepcopy(pkobservables)
 
             self.model0 = pk.Koopman(regressor=dmd0, observables=pkobservables0)
-            self.model0.fit(self.train_data[0], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model0.fit(self.train_data[:,:,0], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model1 = pk.Koopman(regressor=dmd1, observables=pkobservables1)
-            self.model1.fit(self.train_data[1], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model1.fit(self.train_data[:,:,1], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model2 = pk.Koopman(regressor=dmd2, observables=pkobservables2)
-            self.model2.fit(self.train_data[2], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model2.fit(self.train_data[:,:,2], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model3 = pk.Koopman(regressor=dmd3, observables=pkobservables3)
             self.model3.fit(self.init_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
             # print(self.model0)
@@ -148,18 +149,151 @@ class KoopmanModel:
         else:
             raise TypeError("Check your initial condition shape!")
 
+
         y = np.empty((n_steps, self.model0.A.shape[0]), dtype=self.model0.W.dtype)
 
+        # Define parameter regimes
+        p=np.concatenate([self.parametric['train_params'],self.parametric['test_params']],axis=0)
+
         # Define lifted initial condition in eigenspace
-        self.model0.psi(x0).flatten()
+        x00=self.model0.psi(x0).flatten()
+        x01=self.model1.psi(x0).flatten()
+        x02=self.model2.psi(x0).flatten()
+        x03=self.model3.psi(x0).flatten()
+        
+        x0_data = np.array([x00,x01,x02,x03])
+    
+        degree = 1
+        m=x0_data.shape[1]
+        
+        # Create coefficient array: shape (degree+1, m)
+        xcoeffs = np.zeros((degree + 1, m))
 
+        # Fit each entry A[i,j] across p-values
+        for i in range(m):
+            aux = x0_data[:, i]
+            xcoeffs[:, i] = polyfit(p, aux, degree)
 
-        # # lifted eigen space and move 1 step forward
-        # y[0] = self.lamda @ self.psi(x0).flatten()
+        psix0=np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], xcoeffs, axes=1)  # shape (m, n)
 
+        # Now fit the eigenvalues
+        lambda0 = np.diag(self.model0.lamda)
+        lambda1 = np.diag(self.model1.lamda)
+        lambda2 = np.diag(self.model2.lamda)
+        lambda3 = np.diag(self.model3.lamda)
+
+        # Create coefficient array: shape (degree+1, m)
+        lambdacoeffs = np.zeros((degree + 1, lambda0.shape[0]))
+
+        # Fit each entry A[i,j] across p-values
+        for i in range(lambda0.shape[0]):
+            aux = np.array([lambda0[i], lambda1[i], lambda2[i], lambda3[i]])
+            lambdacoeffs[:, i] = polyfit(p, aux, degree)
+        
+        lambdanew=np.diag(np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], lambdacoeffs, axes=1))  # shape (m, n)
+
+        # Now fit the return transform W
+        W0 = self.model0.W
+        W1 = self.model1.W
+        W2 = self.model2.W
+        W3 = self.model3.W
+
+        # Create coefficient array: shape (degree+1, m)
+        Wcoeffs = np.zeros((degree + 1, W0.shape[0], W0.shape[1]))
+        # Fit each entry A[i,j] across p-values
+        for i in range(W0.shape[0]):
+            for j in range(W0.shape[1]):
+                aux = np.array([W0[i, j], W1[i, j], W2[i, j], W3[i, j]])
+                Wcoeffs[:, i, j] = polyfit(p, aux, degree)
+
+        W=np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], Wcoeffs, axes=1)  # shape (m, n)
+
+        # Now predict
+        y[0] = lambdanew @ psix0
         # # iterate in the lifted space
-        # for k in range(n_steps - 1):
-        #     # tmp = self.W @ self.lamda**(k+1) @ y[0].reshape(-1,1)
-        #     y[k + 1] = self.lamda @ y[k]
-        # x = np.transpose(self.W @ y.T)
-        # x = x.astype(self.A.dtype)
+        for k in range(n_steps - 1):
+            y[k + 1] = lambdanew @ y[k]
+        x = W @ y.T
+        x = x.astype(W.dtype)
+        return x
+    
+    # def predict_parametric(self):
+    #     """
+    #     Predict the future states of the system using the trained model.
+    #     :return: Predicted data.
+    #     """
+    #     # Manual set-up for the prediction
+    #     x0=self.init_data[-1]
+    #     # x0=np.transpose(x0)
+    #     n_steps=self.prediction_timesteps.shape[0]
+
+    #     # Parametric inference
+    #     if x0.ndim == 1:  # handle non-time delay input but 1D accidently
+    #         x0 = x0.reshape(-1, 1)
+    #     elif x0.ndim == 2 and x0.shape[0] > 1:  # handle time delay input
+    #         x0 = x0.T
+    #     else:
+    #         raise TypeError("Check your initial condition shape!")
+
+    #     y = np.empty((n_steps, self.model0.A.shape[0]), dtype=self.model0.W.dtype)
+
+    #     # Define lifted initial condition in eigenspace
+    #     x00=self.model0.psi(x0).flatten()
+    #     x01=self.model1.psi(x0).flatten()
+    #     x02=self.model2.psi(x0).flatten()
+    #     x03=self.model3.psi(x0).flatten()
+        
+    #     x0_data = np.array([x00,x01,x02,x03])
+    
+    #     degree = 2
+    #     m=x0_data.shape[1]
+        
+    #     # Create coefficient array: shape (degree+1, m)
+    #     xcoeffs = np.zeros((degree + 1, m))
+
+    #     # Fit each entry A[i,j] across p-values
+    #     for i in range(m):
+    #         aux = x0_data[:, i]
+    #         xcoeffs[:, i] = polyfit(self.parametric['train_params'], aux, degree)
+
+    #     psix0=np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], xcoeffs, axes=1)  # shape (m, n)
+
+    #     # Now fit the eigenvalues
+    #     lambda0 = np.diag(self.model0.lamda)
+    #     lambda1 = np.diag(self.model1.lamda)
+    #     lambda2 = np.diag(self.model2.lamda)
+    #     lambda3 = np.diag(self.model3.lamda)
+
+    #     # Create coefficient array: shape (degree+1, m)
+    #     lambdacoeffs = np.zeros((degree + 1, lambda0.shape[0]))
+
+    #     # Fit each entry A[i,j] across p-values
+    #     for i in range(lambda0.shape[0]):
+    #         aux = np.array([lambda0[i], lambda1[i], lambda2[i]])
+    #         lambdacoeffs[:, i] = polyfit(self.parametric['train_params'], aux, degree)
+        
+    #     lambdanew=np.diag(np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], lambdacoeffs, axes=1))  # shape (m, n)
+
+    #     # Now fit the return transform W
+    #     W0 = self.model0.W
+    #     W1 = self.model1.W
+    #     W2 = self.model2.W
+
+    #     # Create coefficient array: shape (degree+1, m)
+    #     Wcoeffs = np.zeros((degree + 1, W0.shape[0], W0.shape[1]))
+    #     # Fit each entry A[i,j] across p-values
+    #     for i in range(W0.shape[0]):
+    #         for j in range(W0.shape[1]):
+    #             aux = np.array([W0[i, j], W1[i, j], W2[i, j]])
+    #             Wcoeffs[:, i, j] = polyfit(self.parametric['train_params'], aux, degree)
+
+    #     W=np.tensordot([self.parametric['test_params'][0]**d for d in range(degree + 1)], Wcoeffs, axes=1)  # shape (m, n)
+
+    #     # Now predict
+    #     y[0] = lambdanew @ psix0
+    #     # # iterate in the lifted space
+    #     for k in range(n_steps - 1):
+    #         y[k + 1] = lambdanew @ y[k]
+    #     x = W @ y.T
+    #     x = x.astype(W.dtype)
+    #     return x
