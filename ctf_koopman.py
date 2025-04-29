@@ -4,7 +4,7 @@ import pykoopman as pk
 from pydmd import DMD
 
 class KoopmanModel:
-    def __init__(self, config: Dict, train_data: Optional[np.ndarray] = None, prediction_timesteps: Optional[np.ndarray] = None, pair_id: Optional[int] = None):
+    def __init__(self, config: Dict, train_data: Optional[np.ndarray] = None, training_timesteps: Optional[np.ndarray] = None, prediction_timesteps: Optional[np.ndarray] = None, pair_id: Optional[int] = None):
         """
         Initialize the Koopman model with the given configuration and training data.
         :param config: Configuration dictionary containing model parameters.
@@ -25,6 +25,8 @@ class KoopmanModel:
         self.train_data = np.transpose(train_data)
         self.train_data = self.train_data.squeeze()
         self.prediction_timesteps = prediction_timesteps
+        self.training_timesteps = training_timesteps[0]
+        print("Prediction timesteps:", self.prediction_timesteps)
         self.spatial_dimension = self.train_data.shape[0]
 
 
@@ -64,8 +66,12 @@ class KoopmanModel:
 
         print(self.model)
 
-        # cut_train = 1000
-        self.model.fit(self.train_data, dt=self.dt)
+        # Fitting the model to the available training data
+        if self.pair_id in [1,2,3,4,5,6,7]:
+            # cut_train = 1000
+            self.model.fit(self.train_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
+        else:
+            ## TODO implement parameteric version
 
         self.A = self.model.A
 
@@ -79,22 +85,16 @@ class KoopmanModel:
 
 
     def predict(self):
-        if self.pair_id in [1]:
-            return self.predict_pure_forecast()
+        if abs(self.prediction_timesteps[0])<1e-6:
+            init=self.train_data[0]
+            # concatante the first time step of the training data with the prediction time steps
+            pred_data = self.model.simulate(init, n_steps=self.prediction_timesteps.shape[0]-1)
+            pred_data = np.transpose(pred_data)
+            pred_data = np.concatenate([np.expand_dims(init,axis=1),pred_data],axis=1)
+        else:
+            init=self.train_data[-1]
+            pred_data = self.model.simulate(init, n_steps=self.prediction_timesteps.shape[0]) # This assumes that train_data[-1] is the time step before the test set
+            pred_data = np.transpose(pred_data)
+            # Use the last time step of the training data as the initial condition for prediction
         
-
-
-        pred_data = self.model.simulate(self.train_data[-1], n_steps=self.prediction_timesteps.shape[0]) # This assumes that train_data[-1] is the time step before the test set
-
-
-        return np.transpose(pred_data) # Transpose to match the original data shape
-
-    def predict_pure_forecast(self):
-        """
-        Predict the next time steps using the trained model.
-        :return: Predicted data for the next time steps.
-        """
-        # Use the last time step of the training data as the initial condition for prediction
-        initial_condition = self.train_data[-1]
-        pred_data = self.model.simulate(initial_condition, n_steps=self.prediction_timesteps.shape[0])
-        return np.transpose(pred_data)  # Transpose to match the original data shape
+        return pred_data# Transpose to match the original data shape
