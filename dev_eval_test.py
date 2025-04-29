@@ -45,9 +45,9 @@ def main(config_path):
         if init_data is None:
             # Stack all training matrices to get a single training matrix
             train_data = np.concatenate(train_data, axis=1)
-        else:
-            # If we are given a burn-in matrix, use it as the training matrix
-            train_data = init_data
+        # else:
+        #     # If we are given a burn-in matrix, use it as the training matrix
+        #     train_data = init_data
         
         # Load metadata (to provide forecast length)
         prediction_timesteps = get_prediction_timesteps(dataset_name, pair_id)
@@ -58,7 +58,7 @@ def main(config_path):
         # prediction_time_steps = prediction_timesteps.shape[0]
 
         # Initialize the model with the config and train_data
-        model = KoopmanModel(config, train_data, training_timesteps, prediction_timesteps, pair_id)
+        model = KoopmanModel(config, train_data, init_data, training_timesteps, prediction_timesteps, pair_id)
         
         model.train()
         
@@ -75,6 +75,8 @@ def main(config_path):
             plt.legend()
 
         elif config['dataset']['name'] == "PDE_KS":
+            if pair_id in [8,9]:
+                train_data = init_data
             # Plotting for Kuramoto-Sivashinsky (KS) equation
             levels = np.linspace(train_data.min(), train_data.max(), 40)
 
@@ -128,15 +130,15 @@ def main(config_path):
             #     ax.axvline(times['KS'][cut_train], color='black', linestyle='--')
             #     ax.axvline(times['KS'][2*cut_train], color='black', linestyle='--')
 
-        K = model.A
+        # K = model.A
 
-        # Let's have a look at the eigenvalues of the Koopman matrix
-        evals, evecs = np.linalg.eig(K)
-        evals_cont = np.log(evals)#/delta_t
+        # # Let's have a look at the eigenvalues of the Koopman matrix
+        # evals, evecs = np.linalg.eig(K)
+        # evals_cont = np.log(evals)#/delta_t
 
-        fig = plt.figure(figsize=(4,4))
-        ax = fig.add_subplot(111)
-        ax.plot(evals_cont.real, evals_cont.imag, 'bo', label='estimated',markersize=5)
+        # fig = plt.figure(figsize=(4,4))
+        # ax = fig.add_subplot(111)
+        # ax.plot(evals_cont.real, evals_cont.imag, 'bo', label='estimated',markersize=5)
 
 
 
