@@ -128,8 +128,7 @@ class KoopmanModel:
                 # Use the last time step of the training data as the initial condition for prediction
         else:
             pred_data = self.predict_parametric()    
-        return pred_data# Transpose to match the original data shape
-    
+        return pred_data
 
     def predict_parametric(self):
         """
