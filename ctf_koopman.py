@@ -27,7 +27,7 @@ class KoopmanModel:
         self.init_data = self.init_data.squeeze()
         self.prediction_timesteps = prediction_timesteps
         self.training_timesteps = training_timesteps[0]
-        self.spatial_dimension = self.train_data.shape[0]
+        self.spatial_dimension = self.train_data.shape[1]
 
         self.dt = self.prediction_timesteps[1] - self.prediction_timesteps[0]
 
@@ -61,52 +61,58 @@ class KoopmanModel:
         elif self.config['model']['observables'] == "TimeDelay":
             pkobservables=pk.observables.TimeDelay(delay=self.dt, n_delays=self.config['model']['observables_time_delay'])
         elif self.config['model']['observables'] == "RandomFourierFeatures":
-            pkobservables=pk.observables.RandomFourierFeatures(include_state=True,gamma=self.gamma,D=self.D)
+            pkobservables=pk.observables.RandomFourierFeatures(include_state=self.config['model']['observables_include_state'],gamma=self.config['model']['observables_gamma'],D=self.config['model']['observables_D'])
         elif self.config['model']['observables'] == "RadialBasisFunctions":
+            centers = np.random.uniform(-1,1,(self.spatial_dimension,self.config['model']['observables_rbf_centers_number']))
             pkobservables=pk.observables.RadialBasisFunction(
                     rbf_type="thinplate",
                     n_centers=centers.shape[1],
                     centers=centers,
-                    kernel_width=1,
+                    kernel_width=self.config['model']['observables_rbf_kernel_width'],
                     polyharmonic_coeff=1.0,
                     include_state=True,
                 )
+            
+        if self.config['model']['observables_cat_identity'] == "True" and self.config['model']['observables'] != "Identity":
+            # Concatenate the identity observables with the other observables
+            pkobservables = pkobservables + pk.observables.Identity()
 
         # Define regressor
-        dmd = DMD(svd_rank=self.config['model']['dmd_rank'])
-        # TODO: Include regressor options
-        # Can concatanate observables obs = ob1 + ob2 + ob3 + ob4 + ob5....
-        # pykoopman.regression import KDMD
-        # EDMD = pk.regression.EDMD()
+        if self.config['model']['regressor'] == "DMD":
+            pkregressor = DMD(svd_rank=self.config['model']['regressor_dmd_rank'])
+        elif self.config['model']['regressor'] == "EDMD":
+            pkregressor = pk.regression.EDMD(svd_rank=self.config['model']['regressor_dmd_rank'])
+        elif self.config['model']['regressor'] == "HAVOK": #TODO: Check regressor params
+            pkregressor = pk.regression.HAVOK(svd_rank=self.config['model']['regressor_dmd_rank'])
+        elif self.config['model']['regressor'] == "KDMD": #TODO: Check regressor params
+            pkregressor = pk.regression.KDMD(svd_rank=self.config['model']['regressor_dmd_rank'])
+        elif self.config['model']['regressor'] == "NNDMD": #TODO: Check regressor params
+            pkregressor = pk.regression.DLKoopmanRegressor()
         
         if self.parametric is None:
 
-            self.model = pk.Koopman(regressor=dmd, observables=pkobservables)
-            # observables = [lambda x, y: x * y, lambda x: x**2]
-            # model = pk.Koopman(regressor=dmd, observables=pk.observables.CustomObservables(observables))
+            self.model = pk.Koopman(regressor=pkregressor, observables=pkobservables)
 
-            print(self.model)
-
-            # Fitting the model to the available training data
+            # Fit the model to the training data
             self.model.fit(self.train_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
         else:
-            dmd0 = copy.deepcopy(dmd)
-            dmd1 = copy.deepcopy(dmd)
-            dmd2 = copy.deepcopy(dmd)
-            dmd3 = copy.deepcopy(dmd)
+            pkregressor0 = copy.deepcopy(pkregressor)
+            pkregressor1 = copy.deepcopy(pkregressor)
+            pkregressor2 = copy.deepcopy(pkregressor)
+            pkregressor3 = copy.deepcopy(pkregressor)
 
             pkobservables0 = copy.deepcopy(pkobservables)
             pkobservables1 = copy.deepcopy(pkobservables)
             pkobservables2 = copy.deepcopy(pkobservables)
             pkobservables3 = copy.deepcopy(pkobservables)
 
-            self.model0 = pk.Koopman(regressor=dmd0, observables=pkobservables0)
+            self.model0 = pk.Koopman(regressor=pkregressor0, observables=pkobservables0)
             self.model0.fit(self.train_data[:,:,0], dt=self.training_timesteps[1]-self.training_timesteps[0])
-            self.model1 = pk.Koopman(regressor=dmd1, observables=pkobservables1)
+            self.model1 = pk.Koopman(regressor=pkregressor1, observables=pkobservables1)
             self.model1.fit(self.train_data[:,:,1], dt=self.training_timesteps[1]-self.training_timesteps[0])
-            self.model2 = pk.Koopman(regressor=dmd2, observables=pkobservables2)
+            self.model2 = pk.Koopman(regressor=pkregressor2, observables=pkobservables2)
             self.model2.fit(self.train_data[:,:,2], dt=self.training_timesteps[1]-self.training_timesteps[0])
-            self.model3 = pk.Koopman(regressor=dmd3, observables=pkobservables3)
+            self.model3 = pk.Koopman(regressor=pkregressor3, observables=pkobservables3)
             self.model3.fit(self.init_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
             # print(self.model0)
             # 'train_params': np.array([1,2,3]),
