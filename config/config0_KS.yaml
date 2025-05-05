@@ -1,9 +1,24 @@
 dataset:
   name: PDE_KS
-  pair_id: 8-9  # Example: run on sub-datasets 1 to 3
+  pair_id: 1-9  # Example: run on sub-datasets 1 to 3
 model:
   name: Koopman
+  # Observables parameters
+  observables: "RadialBasisFunctions" # Options: Identity, Polynomial, TimeDelay, RadialBasisFunctions, RandomFourierFeatures, ConcatObservables
+
+  observables_poly_degree: 2 # Int: Only called if observables is Polynomial
+  observables_time_delay: 1 # Int: Only called if observables is TimeDelay
+  observables_RBF_centers_number: 100 # Only called if observables is RadialBasisFunctions
+  
+  
+  observables_rbf_n: 100 # Only called if observables is RadialBasisFunctions
+  observables_rbf_sigma: 1.0 # Only called if observables is RadialBasisFunctions
+  observables_rff_n: 100 # Only called if observables is RandomFourierFeatures
+  observables_rff_sigma: 1.0 # Only called if observables is RandomFourierFeatures
+  observables_rff_freq: 1.0 # Only called if observables is RandomFourierFeatures
+
+  # Regressor parameters
+  regressor: "PyDMDRegressor" # Options: PyDMDRegressor, DMDc, EMD, EDMDc, KDMD, HAVOK, NNDMD
+
   # Add Koopman model-specific parameters here
   dmd_rank: 10
-  observables: "polynomial"
-  observables_degree: 1

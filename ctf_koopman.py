@@ -19,9 +19,6 @@ class KoopmanModel:
         self.config = config
         self.pair_id = pair_id
         self.dataset_name = config['dataset']['name']
-        self.dmd_rank = config['model']['dmd_rank']
-        self.observables = config['model']['observables']
-        self.observables_degree = config['model']['observables_degree']
 
         self.pair_id = pair_id
         self.train_data = np.transpose(train_data)
@@ -30,9 +27,7 @@ class KoopmanModel:
         self.init_data = self.init_data.squeeze()
         self.prediction_timesteps = prediction_timesteps
         self.training_timesteps = training_timesteps[0]
-        print("Prediction timesteps:", self.prediction_timesteps)
         self.spatial_dimension = self.train_data.shape[0]
-
 
         self.dt = self.prediction_timesteps[1] - self.prediction_timesteps[0]
 
@@ -55,16 +50,19 @@ class KoopmanModel:
         """
         Train the Koopman model using the provided training data.
         """
-        dmd = DMD(svd_rank=self.dmd_rank)
 
-        ## TODO: Fix parameter passing to self.config['model']...
-        if self.observables == "polynomial":
-            pkobservables=pk.observables.Polynomial(degree=self.observables_degree)
-        elif self.observables == "time_delay":
-            pkobservables=pk.observables.TimeDelay(delay=self.delay, n_delays=self.n_delays)
-        elif self.observables == "random_fourier":
+        # Firstly choose the Koopman observables
+        # TODO: What to do about ConcatObservables?
+
+        if self.config['model']['observables'] == "Identity":
+            pkobservables=pk.observables.Identity()
+        if self.config['model']['observables'] == "Polynomial":
+            pkobservables=pk.observables.Polynomial(degree=self.config['model']['observables_poly_degree'])
+        elif self.config['model']['observables'] == "TimeDelay":
+            pkobservables=pk.observables.TimeDelay(delay=self.dt, n_delays=self.config['model']['observables_time_delay'])
+        elif self.config['model']['observables'] == "RandomFourierFeatures":
             pkobservables=pk.observables.RandomFourierFeatures(include_state=True,gamma=self.gamma,D=self.D)
-        elif self.observables == "RBF":
+        elif self.config['model']['observables'] == "RadialBasisFunctions":
             pkobservables=pk.observables.RadialBasisFunction(
                     rbf_type="thinplate",
                     n_centers=centers.shape[1],
@@ -74,6 +72,8 @@ class KoopmanModel:
                     include_state=True,
                 )
 
+        # Define regressor
+        dmd = DMD(svd_rank=self.config['model']['dmd_rank'])
         # TODO: Include regressor options
         # Can concatanate observables obs = ob1 + ob2 + ob3 + ob4 + ob5....
         # pykoopman.regression import KDMD
