@@ -1,0 +1,49 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id: [1,2,3,4,5,6,7,8,9]
+model:
+  name: Koopman
+  train_split: 0.8   # float in (0.7 and 1.0)
+                     # proportion of train data to use for training
+  seed: 0
+  n_trials: 3
+hyperparameters: # Specify hyperparameters and ranges
+  # Observables parameters
+  observables:
+    type: choice
+    choices: ["Polynomial"] # Options: Identity, Polynomial, TimeDelay, RadialBasisFunctions, RandomFourierFeatures, ConcatObservables
+  observables_cat_identity:
+    type: choice
+    choices: [False] # Bool: Only called if observables is not Identity
+  observables_poly_degree:
+    type: choice
+    choices: [1] # Int: Only called if observables is Polynomial
+  observables_time_delay: 
+    type: choice
+    choices: [1] # Int: Only called if observables is TimeDelay
+  observables_rbf_centers_number:
+    type: choice
+    choices: [100] # Int: Only called if observables is RadialBasisFunctions
+  observables_rbf_kernel_width:
+    type: choice
+    choices: [1.0] # Float: Only called if observables is RadialBasisFunctions
+  observables_include_state:
+    type: choice
+    choices: [True] # Bool: Only called if observables is RandomFourierFeatures
+  observables_gamma:
+    type: choice
+    choices: [1.0] # Float: Only called if observables is RandomFourierFeatures
+  observables_D:
+    type: choice
+    choices: [3] # Int: Only called if observables is RandomFourierFeatures
+
+  # Regressor parameters
+  regressor:
+    type: choice
+    choices: ["DMD"] # Options: DMD, EDMD, HAVOK, KDMD, NNDMD
+  regressor_dmd_rank:
+    type: choice
+    choices: [10] # Int: Only called if regressor is DMD, EDMD, HAVOK, KDMD
+  regressor_tlsq_rank:
+    type: choice
+    choices: [10] # Int: Only called if regressor is EDMD, KDMD
