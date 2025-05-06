@@ -62,18 +62,18 @@ class KoopmanModel:
         if self.config['model']['observables'] == "Identity":
             pkobservables=pk.observables.Identity()
         if self.config['model']['observables'] == "Polynomial":
-            pkobservables=pk.observables.Polynomial(degree=self.config['model']['observables_poly_degree'])
+            pkobservables=pk.observables.Polynomial(degree=self.config['model']['observables_int_param'])
         elif self.config['model']['observables'] == "TimeDelay":
-            pkobservables=pk.observables.TimeDelay(delay=self.dt, n_delays=self.config['model']['observables_time_delay'])
+            pkobservables=pk.observables.TimeDelay(delay=self.dt, n_delays=self.config['model']['observables_int_param'])
         elif self.config['model']['observables'] == "RandomFourierFeatures":
-            pkobservables=pk.observables.RandomFourierFeatures(include_state=self.config['model']['observables_include_state'],gamma=self.config['model']['observables_gamma'],D=self.config['model']['observables_D'])
+            pkobservables=pk.observables.RandomFourierFeatures(include_state=self.config['model']['observables_include_state'],gamma=self.config['model']['observables_float_param'],D=self.config['model']['observables_int_param'])
         elif self.config['model']['observables'] == "RadialBasisFunctions":
             centers = np.random.uniform(-1,1,(self.spatial_dimension,self.config['model']['observables_rbf_centers_number']))
             pkobservables=pk.observables.RadialBasisFunction(
                     rbf_type="thinplate",
                     n_centers=centers.shape[1],
                     centers=centers,
-                    kernel_width=self.config['model']['observables_rbf_kernel_width'],
+                    kernel_width=self.config['model']['observables_float_param'],
                     polyharmonic_coeff=1.0,
                     include_state=True,
                 )
