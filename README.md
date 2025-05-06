@@ -12,8 +12,8 @@ This directory contains an implementation of the [PyKoopman](https://github.com/
 To run test, use the `run.py` script from the **project root** followed by the path to a configuration file. For example:
 
 ```bash
-python models/ctf_koopman/run.py models/ctf_koopman/config_Lorenz.yaml
-python models/ctf_koopman/run.py models/ctf_koopman/config_KS.yaml
+python models/ctf_koopman/run.py models/ctf_koopman/config0_Lorenz.yaml
+python models/ctf_koopman/run.py models/ctf_koopman/config0_KS.yaml
 ```
 
 ## Description
@@ -31,7 +31,6 @@ Each configuration file must include the following. The options also highlight w
     - Range string: `pair_id: '1-6'`
     - Omitted or `'all'`: Runs on all sub-datasets.
 - **`model`**:
-  - `name`: `KAN`.
   - `name`: `Koopman`
   - `observables`: `Identity`, `Polynomial`, `TimeDelay`, `RadialBasisFunctions`, `RandomFourierFeatures`, `ConcatObservables`
   - `observables_cat_identity`: `Bool`
@@ -46,6 +45,33 @@ Each configuration file must include the following. The options also highlight w
   - `regressor`: `DMD`, `EDMD`, `HAVOK`, `KDMD`, `NNDMD`
   - `regressor_dmd_rank`: `Int`
   - `regressor_tlsq_rank`: `Int`
+
+Example (`models/ctf_koopman/config/config0_Lorenz.yaml`):
+```yaml
+dataset:
+  name: PDE_KS
+  pair_id: 1-9  # Example: run on sub-datasets 1 to 3
+model:
+  name: Koopman
+  # Observables parameters
+  observables: "Polynomial" # Options: Identity, Polynomial, TimeDelay, RadialBasisFunctions, RandomFourierFeatures, ConcatObservables
+  observables_cat_identity: False # Bool: Only called if observables is not Identity
+
+
+  observables_poly_degree: 1 # Int: Only called if observables is Polynomial
+  observables_time_delay: 1 # Int: Only called if observables is TimeDelay
+  observables_rbf_centers_number: 100 # Int: Only called if observables is RadialBasisFunctions
+  observables_rbf_kernel_width: 1.0 # Float: Only called if observables is RadialBasisFunctions
+  observables_include_state: True # Bool: Only called if observables is RandomFourierFeatures
+  observables_gamma: 1.0 # Float: Only called if observables is RandomFourierFeatures
+  observables_D: 3 # Int: Only called if observables is RandomFourierFeatures
+
+  
+  # Regressor parameters
+  regressor: "DMD" # Options: DMD, EDMD, HAVOK, KDMD, NNDMD
+  regressor_dmd_rank: 10 # Int: Only called if regressor is DMD, EDMD, HAVOK, KDMD
+  regressor_tlsq_rank: 10 # Int: Only called if regressor is EDMD, KDMD
+```
 
 ## Requirements
 
