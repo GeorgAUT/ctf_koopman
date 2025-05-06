@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 import datetime
 import numpy as np
-from ctf4science.data_module import load_dataset, load_validation_dataset, get_validation_prediction_timesteps, parse_pair_ids, get_applicable_plots
+from ctf4science.data_module import load_dataset, load_validation_dataset, get_validation_prediction_timesteps, parse_pair_ids, get_validation_training_timesteps
 from ctf4science.eval_module import evaluate_custom, save_results
 from ctf4science.visualization_module import Visualization
 from ctf_koopman import KoopmanModel
@@ -73,8 +73,8 @@ def main(config_path: str):
             train_data = np.concatenate(train_data, axis=1)
         
         # Load metadata (to provide forecast length)
-        prediction_timesteps = get_prediction_timesteps(dataset_name, pair_id)
-        training_timesteps = get_training_timesteps(dataset_name, pair_id)
+        prediction_timesteps = get_validation_prediction_timesteps(dataset_name, pair_id)
+        training_timesteps = get_validation_training_timesteps(dataset_name, pair_id)
 
         # Initialize the model with the config and train_data
         model = KoopmanModel(config, train_data, init_data, training_timesteps, prediction_timesteps, pair_id)
@@ -105,8 +105,8 @@ def main(config_path: str):
 
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('config', type=str, help="Path to the configuration file")
-    # args = parser.parse_args()
-    main("models/ctf_koopman/tuning_config/config_Lorenz.yaml")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config', type=str, help="Path to the configuration file")
+    args = parser.parse_args()
+    #main("models/ctf_koopman/tuning_config/config_Lorenz.yaml")
     #main("models/ctf_koopman/tuning_config/config_KS.yaml")
