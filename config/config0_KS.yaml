@@ -17,8 +17,7 @@ model:
   observables_D: 3 # Int: Only called if observables is RandomFourierFeatures
 
   
-
-
   # Regressor parameters
-  regressor: "EDMD" # Options: DMD, EDMD, KDMD, HAVOK, NNDMD
-  regressor_dmd_rank: 10 # Int: Only called if regressor is DMD, EDMD ??
+  regressor: "DMD" # Options: DMD, EDMD, HAVOK, KDMD, NNDMD
+  regressor_dmd_rank: 10 # Int: Only called if regressor is DMD, EDMD, HAVOK, KDMD
+  regressor_tlsq_rank: 10 # Int: Only called if regressor is EDMD, KDMD

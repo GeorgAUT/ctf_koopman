@@ -1,3 +1,5 @@
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
 import argparse
 import yaml
 import numpy as np
@@ -12,7 +14,11 @@ import matplotlib.gridspec as gridspec
 from matplotlib import cm
 
 
+
+
+
 def main(config_path):
+
     # Load configuration
     with open(config_path, 'r') as f:
         config = yaml.safe_load(f)

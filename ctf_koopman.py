@@ -12,25 +12,31 @@ class KoopmanModel:
         :param config: Configuration dictionary containing model parameters.
         :param
         train_data: Training data for the model.
-        :param prediction_time_steps: Number of steps to predict into the future.
+        :param
+        init_data: warm-start data for parametric regimes.
+        :param prediction_time_steps: time instances at which to predict.
+        :param training_time_steps: time instances at which to train.
         :param pair_id: Identifier for the data pair.
         """
         # Load configuration parameters
         self.config = config
         self.pair_id = pair_id
         self.dataset_name = config['dataset']['name']
-
         self.pair_id = pair_id
+
+        # Load training data (need to reshape it for PyKoopman)
         self.train_data = np.transpose(train_data)
         self.train_data = self.train_data.squeeze()
         self.init_data = np.transpose(init_data)
         self.init_data = self.init_data.squeeze()
+        
+        # Load auxiliary dataparameters
         self.prediction_timesteps = prediction_timesteps
         self.training_timesteps = training_timesteps[0]
         self.spatial_dimension = self.train_data.shape[1]
-
         self.dt = self.prediction_timesteps[1] - self.prediction_timesteps[0]
 
+        # Set up parametric regimes (interpolation and extrapolation)
         if pair_id == 8:
             self.parametric = {
                 'mode': config['model']['parametric'] if 'parametric' in config['model'] else 'monolithic',
@@ -52,7 +58,6 @@ class KoopmanModel:
         """
 
         # Firstly choose the Koopman observables
-        # TODO: What to do about ConcatObservables?
 
         if self.config['model']['observables'] == "Identity":
             pkobservables=pk.observables.Identity()
@@ -81,18 +86,21 @@ class KoopmanModel:
         if self.config['model']['regressor'] == "DMD":
             pkregressor = DMD(svd_rank=self.config['model']['regressor_dmd_rank'])
         elif self.config['model']['regressor'] == "EDMD":
-            pkregressor = pk.regression.EDMD(svd_rank=self.config['model']['regressor_dmd_rank'])
-        elif self.config['model']['regressor'] == "HAVOK": #TODO: Check regressor params
+            pkregressor = pk.regression.EDMD(svd_rank=self.config['model']['regressor_dmd_rank'],tlsq_rank=self.config['model']['regressor_tlsq_rank'])
+        elif self.config['model']['regressor'] == "HAVOK":
             pkregressor = pk.regression.HAVOK(svd_rank=self.config['model']['regressor_dmd_rank'])
-        elif self.config['model']['regressor'] == "KDMD": #TODO: Check regressor params
-            pkregressor = pk.regression.KDMD(svd_rank=self.config['model']['regressor_dmd_rank'])
+        elif self.config['model']['regressor'] == "KDMD":
+            pkregressor = pk.regression.KDMD(svd_rank=self.config['model']['regressor_dmd_rank'],tlsq_rank=self.config['model']['regressor_tlsq_rank'])
         elif self.config['model']['regressor'] == "NNDMD": #TODO: Check regressor params
-            pkregressor = pk.regression.DLKoopmanRegressor()
+            pkregressor = pk.regression.NNDMD(config_encoder=dict(
+                input_size=self.spatial_dimension+1, hidden_sizes=[self.config['model']['regressor_dmd_rank']] * 2, output_size=6, activations="tanh"),
+                config_decoder=dict(
+                    input_size=6, hidden_sizes=[self.config['model']['regressor_dmd_rank']] * 2, output_size=self.spatial_dimension+1, activations="linear"),
+                    trainer_kwargs=dict(max_epochs=10,accelerator="gpu", devices=1))
         
+        # Train the model (two cases for parametric and non-parametric)
         if self.parametric is None:
-
             self.model = pk.Koopman(regressor=pkregressor, observables=pkobservables)
-
             # Fit the model to the training data
             self.model.fit(self.train_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
         else:
@@ -114,10 +122,6 @@ class KoopmanModel:
             self.model2.fit(self.train_data[:,:,2], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model3 = pk.Koopman(regressor=pkregressor3, observables=pkobservables3)
             self.model3.fit(self.init_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
-            # print(self.model0)
-            # 'train_params': np.array([1,2,3]),
-            # 'test_params': np.array([4])
-
 
     def predict(self):
         if self.parametric is None:

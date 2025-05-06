@@ -1,22 +1,55 @@
 # CTF_Koopman Model
 
-This directory contains an implementation of a Koopman-based model for the CTF for Science Framework.
+This directory contains an implementation of the [PyKoopman](https://github.com/dynamicslab/pykoopman) Ppackage for testing on the CTF for Science Framework.
 
 ## Files
-- `ctf_koopman.py`: Contains the `KoopmanModel` class implementing the model logic.
+- `ctf_koopman.py`: Contains the `KoopmanModel` class adapting the PyKoopman logic to the CTF.
 - `run.py`: Batch runner script for running the model across multiple sub-datasets.
-- `config.yaml`: Example configuration file for running the model.
+- `config_XX.yaml`: Example configuration file for running the model.
 
 ## Usage
 
-Run the model with:
+To run test, use the `run.py` script from the **project root** followed by the path to a configuration file. For example:
 
 ```bash
-python models/ctf_koopman/run.py models/ctf_koopman/config.yaml
+python models/ctf_koopman/run.py models/ctf_koopman/config_Lorenz.yaml
+python models/ctf_koopman/run.py models/ctf_koopman/config_KS.yaml
 ```
-
-## Dependencies
-- Add any model-specific dependencies here.
 
 ## Description
 - Add a detailed description of your Koopman model, its parameters, and usage instructions here.
+
+
+### Configuration Structure
+
+Each configuration file must include the following. The options also highlight which of the PyKoopman Observables and Regressors are implemented in the current version and were hence used for hyperparameter tuning:
+- **`dataset`** (required):
+  - `name`: The dataset name (e.g., `ODE_Lorenz`, `PDE_KS`).
+  - `pair_id`: Specifies sub-datasets to run on. Formats:
+    - Single integer: `pair_id: 3`
+    - List: `pair_id: [1, 2, 3, 4, 5, 6]`
+    - Range string: `pair_id: '1-6'`
+    - Omitted or `'all'`: Runs on all sub-datasets.
+- **`model`**:
+  - `name`: `KAN`.
+  - `name`: `Koopman`
+  - `observables`: `Identity`, `Polynomial`, `TimeDelay`, `RadialBasisFunctions`, `RandomFourierFeatures`, `ConcatObservables`
+  - `observables_cat_identity`: `Bool`
+  - `observables_poly_degree`: `Int`
+  - `observables_time_delay`: `Int`
+  - `observables_rbf_centers_number`: `Int`
+  - `observables_rbf_kernel_width`: `Float`
+  - `observables_include_state`: `Bool`
+  - `observables_gamma`: `Float`
+  - `observables_D`: `Int`
+
+  - `regressor`: `DMD`, `EDMD`, `HAVOK`, `KDMD`, `NNDMD`
+  - `regressor_dmd_rank`: `Int`
+  - `regressor_tlsq_rank`: `Int`
+
+## Requirements
+
+PyKoopman for CTF relies on the following packages lists in `requirements.txt`:
+- numpy
+- pydmd > 0.4, <= 0.4.1
+- pykoopman
