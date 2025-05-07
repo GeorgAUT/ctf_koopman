@@ -51,11 +51,15 @@ class KoopmanModel:
             }
         else:
             self.parametric = None
+        
+
+        np.random.seed(self.config['model']['seed'])  # set random seed for reproducibility
 
     def train(self):
         """
         Train the Koopman model using the provided training data.
         """
+
 
         # Firstly choose the Koopman observables
 
@@ -66,7 +70,7 @@ class KoopmanModel:
         elif self.config['model']['observables'] == "TimeDelay":
             pkobservables=pk.observables.TimeDelay(delay=self.dt, n_delays=self.config['model']['observables_int_param'])
         elif self.config['model']['observables'] == "RandomFourierFeatures":
-            pkobservables=pk.observables.RandomFourierFeatures(include_state=self.config['model']['observables_include_state'],gamma=self.config['model']['observables_float_param'],D=self.config['model']['observables_int_param'])
+            pkobservables=pk.observables.RandomFourierFeatures(include_state=self.config['model']['observables_include_state'],gamma=self.config['model']['observables_float_param'],D=self.config['model']['observables_int_param'],random_state=self.config['model']['seed'])
         elif self.config['model']['observables'] == "RadialBasisFunctions":
             centers = np.random.uniform(-1,1,(self.spatial_dimension,self.config['model']['observables_rbf_centers_number']))
             pkobservables=pk.observables.RadialBasisFunction(

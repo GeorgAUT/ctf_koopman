@@ -62,6 +62,7 @@ def main(config_path: str):
         train_split = config['model']['train_split']
         train_data, val_data, init_data = load_validation_dataset(dataset_name, pair_id, train_split)
         prediction_timesteps = get_validation_prediction_timesteps(dataset_name, pair_id, train_split)
+        training_timesteps = get_validation_training_timesteps(dataset_name, pair_id, train_split)
 
 
         # Load sub-dataset
@@ -72,10 +73,6 @@ def main(config_path: str):
             # Stack all training matrices to get a single training matrix
             train_data = np.concatenate(train_data, axis=1)
         
-        # Load metadata (to provide forecast length)
-        prediction_timesteps = get_validation_prediction_timesteps(dataset_name, pair_id)
-        training_timesteps = get_validation_training_timesteps(dataset_name, pair_id)
-
         # Initialize the model with the config and train_data
         model = KoopmanModel(config, train_data, init_data, training_timesteps, prediction_timesteps, pair_id)
                 

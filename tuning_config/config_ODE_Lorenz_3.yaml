@@ -1,0 +1,46 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id: [3]
+model:
+  name: Koopman
+  train_split: 0.75   # float in (0.7 and 1.0)
+                     # proportion of train data to use for training
+  seed: 0
+  n_trials: 50
+hyperparameters: # Specify hyperparameters and ranges
+  # Observables parameters
+  observables:
+    type: choice
+    choices: ["Identity", "Polynomial", "TimeDelay", "RadialBasisFunctions", "RandomFourierFeatures"] # Options: Identity, Polynomial, TimeDelay, RadialBasisFunctions, RandomFourierFeatures, ConcatObservables
+  observables_cat_identity:
+    type: choice
+    choices: [False, True] # Bool: Only called if observables is not Identity
+  observables_int_param:
+    type: randint
+    lower_bound: 1
+    upper_bound: 10
+  observables_rbf_centers_number: # Int: Only called if observables is RadialBasisFunctions
+    type: randint
+    lower_bound: 10
+    upper_bound: 1000
+    # Note: This is a large range to allow for more exploration
+  observables_float_param:
+    type: uniform
+    lower_bound: 0.5
+    upper_bound: 2.0
+  observables_include_state:
+    type: choice
+    choices: [True, False] # Bool: Only called if observables is RandomFourierFeatures
+ 
+  # Regressor parameters
+  regressor_dmd_rank:
+    type: randint
+    lower_bound: 1
+    upper_bound: 200
+  regressor_tlsq_rank:
+    type: randint
+    lower_bound: 1
+    upper_bound: 200
+  regressor:
+    type: choice
+    choices: ["DMD","EDMD", "HAVOK", "KDMD", "NNDMD"]

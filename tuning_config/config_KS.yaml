@@ -15,35 +15,26 @@ hyperparameters: # Specify hyperparameters and ranges
   observables_cat_identity:
     type: choice
     choices: [False] # Bool: Only called if observables is not Identity
-  observables_poly_degree:
+  observables_int_param:
     type: choice
-    choices: [1] # Int: Only called if observables is Polynomial
-  observables_time_delay: 
-    type: choice
-    choices: [1] # Int: Only called if observables is TimeDelay
+    choices: [1,2,3] # Int: Only called if observables is Polynomial
   observables_rbf_centers_number:
     type: choice
     choices: [100] # Int: Only called if observables is RadialBasisFunctions
-  observables_rbf_kernel_width:
+  observables_float_param:
     type: choice
     choices: [1.0] # Float: Only called if observables is RadialBasisFunctions
   observables_include_state:
     type: choice
     choices: [True] # Bool: Only called if observables is RandomFourierFeatures
-  observables_gamma:
-    type: choice
-    choices: [1.0] # Float: Only called if observables is RandomFourierFeatures
-  observables_D:
-    type: choice
-    choices: [3] # Int: Only called if observables is RandomFourierFeatures
-
+ 
   # Regressor parameters
-  regressor:
-    type: choice
-    choices: ["DMD"] # Options: DMD, EDMD, HAVOK, KDMD, NNDMD
   regressor_dmd_rank:
     type: choice
     choices: [10] # Int: Only called if regressor is DMD, EDMD, HAVOK, KDMD
   regressor_tlsq_rank:
     type: choice
     choices: [10] # Int: Only called if regressor is EDMD, KDMD
+  regressor:
+    type: choice
+    choices: ["DMD"] # Options: DMD, EDMD, HAVOK, KDMD, NNDMD
