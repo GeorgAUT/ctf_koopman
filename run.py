@@ -87,5 +87,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('config', type=str, help="Path to the configuration file")
     args = parser.parse_args()
+    main(args.config)
     #main("models/ctf_koopman/config/config0_Lorenz.yaml")
     #main("models/ctf_koopman/config/config0_KS.yaml")
+    # main("models/ctf_koopman/config/config_ODE_Lorenz_9_optimized.yaml")
