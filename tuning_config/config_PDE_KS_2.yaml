@@ -6,7 +6,6 @@ model:
   train_split: 0.75   # float in (0.7 and 1.0)
                      # proportion of train data to use for training
   seed: 0
-  n_trials: 50
 hyperparameters: # Specify hyperparameters and ranges
   # Observables parameters
   observables:
