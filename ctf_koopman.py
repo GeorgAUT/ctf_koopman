@@ -25,15 +25,15 @@ class KoopmanModel:
         self.pair_id = pair_id
 
         # Load training data (need to reshape it for PyKoopman)
-        self.train_data = np.transpose(train_data)
-        self.train_data = self.train_data.squeeze()
-        self.init_data = np.transpose(init_data)
-        self.init_data = self.init_data.squeeze()
+        self.train_data = train_data
+        # self.train_data = self.train_data.squeeze()
+        self.init_data = init_data
+        # if self.init_data is not None:
+        #     self.init_data = self.init_data.squeeze()
         
         # Load auxiliary dataparameters
         self.prediction_timesteps = prediction_timesteps
         self.training_timesteps = training_timesteps[0]
-        self.spatial_dimension = self.train_data.shape[1]
         self.dt = self.prediction_timesteps[1] - self.prediction_timesteps[0]
 
         # Set up parametric regimes (interpolation and extrapolation)
@@ -43,14 +43,17 @@ class KoopmanModel:
                 'train_params': np.array([1,2,4]),
                 'test_params': np.array([3])
             }
+            self.spatial_dimension = self.train_data[0].shape[1]
         elif pair_id == 9:
             self.parametric = {
                 'mode': config['model']['parametric'] if 'parametric' in config['model'] else 'monolithic',
                 'train_params': np.array([1,2,3]),
                 'test_params': np.array([4])
             }
+            self.spatial_dimension = self.train_data[0].shape[1]
         else:
             self.parametric = None
+            self.spatial_dimension = self.train_data.shape[1]
         
 
         np.random.seed(self.config['model']['seed'])  # set random seed for reproducibility
@@ -119,11 +122,11 @@ class KoopmanModel:
             pkobservables3 = copy.deepcopy(pkobservables)
 
             self.model0 = pk.Koopman(regressor=pkregressor0, observables=pkobservables0)
-            self.model0.fit(self.train_data[:,:,0], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model0.fit(self.train_data[0], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model1 = pk.Koopman(regressor=pkregressor1, observables=pkobservables1)
-            self.model1.fit(self.train_data[:,:,1], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model1.fit(self.train_data[1], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model2 = pk.Koopman(regressor=pkregressor2, observables=pkobservables2)
-            self.model2.fit(self.train_data[:,:,2], dt=self.training_timesteps[1]-self.training_timesteps[0])
+            self.model2.fit(self.train_data[2], dt=self.training_timesteps[1]-self.training_timesteps[0])
             self.model3 = pk.Koopman(regressor=pkregressor3, observables=pkobservables3)
             self.model3.fit(self.init_data, dt=self.training_timesteps[1]-self.training_timesteps[0])
 
@@ -133,12 +136,12 @@ class KoopmanModel:
                 init=self.train_data[0]
                 # concatante the first time step of the training data with the prediction time steps
                 pred_data = self.model.simulate(init, n_steps=self.prediction_timesteps.shape[0]-1)
-                pred_data = np.transpose(pred_data)
-                pred_data = np.concatenate([np.expand_dims(init,axis=1),pred_data],axis=1)
+                #pred_data = np.transpose(pred_data)
+                pred_data = np.concatenate([np.expand_dims(init,axis=0),pred_data],axis=0)
             else:
                 init=self.train_data[-1]
                 pred_data = self.model.simulate(init, n_steps=self.prediction_timesteps.shape[0]) # This assumes that train_data[-1] is the time step before the test set
-                pred_data = np.transpose(pred_data)
+                #pred_data = pred_data
                 # Use the last time step of the training data as the initial condition for prediction
         else:
             pred_data = self.predict_parametric()    
@@ -151,7 +154,7 @@ class KoopmanModel:
         """
         # Manual set-up for the prediction
         x0=self.init_data[-1]
-        # x0=np.transpose(x0)
+        x0=np.transpose(x0)
         n_steps=self.prediction_timesteps.shape[0]
 
         # Parametric inference
@@ -228,7 +231,7 @@ class KoopmanModel:
             y[k + 1] = lambdanew @ y[k]
         x = W @ y.T
         x = x.astype(W.dtype)
-        return x
+        return x.T
     
     # def predict_parametric(self):
     #     """

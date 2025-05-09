@@ -74,7 +74,7 @@ def main(config_path):
         # Plot the first component of pred_data
         if config['dataset']['name'] == "ODE_Lorenz":
             plt.figure()
-            plt.plot(pred_data[0], label=f'pair_id {pair_id} - pred_data[0]')
+            plt.plot(pred_data[:,0], label=f'pair_id {pair_id} - pred_data[0]')
             plt.title(f'First Component of pred_data for pair_id {pair_id}')
             plt.xlabel('Time Step')
             plt.ylabel('Value')
@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
     # main("models/ctf_koopman/config/config1_Lorenz.yaml")
     # main("models/ctf_koopman/config/config1_KS.yaml")
-    main("models/ctf_koopman/config/config_ODE_Lorenz_1_optimized.yaml")
+    main("models/ctf_koopman/config/config_ODE_Lorenz_all_optimized.yaml")
