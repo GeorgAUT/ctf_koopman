@@ -1,0 +1,16 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id:
+  - 2
+model:
+  name: Koopman
+  observables: RadialBasisFunctions
+  observables_cat_identity: false
+  observables_float_param: 1.2438053078653968
+  observables_include_state: false
+  observables_int_param: 3
+  observables_rbf_centers_number: 160
+  regressor: DMD
+  regressor_dmd_rank: 62
+  regressor_tlsq_rank: 74
+  seed: 0

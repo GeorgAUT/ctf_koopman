@@ -1,0 +1,16 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id:
+  - 5
+model:
+  name: Koopman
+  observables: RandomFourierFeatures
+  observables_cat_identity: true
+  observables_float_param: 0.9564810740551959
+  observables_include_state: true
+  observables_int_param: 2
+  observables_rbf_centers_number: 281
+  regressor: EDMD
+  regressor_dmd_rank: 171
+  regressor_tlsq_rank: 8
+  seed: 0

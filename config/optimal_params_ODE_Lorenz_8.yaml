@@ -1,0 +1,16 @@
+dataset:
+  name: ODE_Lorenz
+  pair_id:
+  - 8
+model:
+  name: Koopman
+  observables: Polynomial
+  observables_cat_identity: true
+  observables_float_param: 1.092064170906981
+  observables_include_state: false
+  observables_int_param: 3
+  observables_rbf_centers_number: 601
+  regressor: DMD
+  regressor_dmd_rank: 192
+  regressor_tlsq_rank: 136
+  seed: 0
