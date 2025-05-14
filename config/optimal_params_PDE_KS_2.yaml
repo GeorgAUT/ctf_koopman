@@ -1,0 +1,16 @@
+dataset:
+  name: PDE_KS
+  pair_id:
+  - 2
+model:
+  name: Koopman
+  observables: RadialBasisFunctions
+  observables_cat_identity: true
+  observables_float_param: 1.5015515958033636
+  observables_include_state: false
+  observables_int_param: 2
+  observables_rbf_centers_number: 272
+  regressor: DMD
+  regressor_dmd_rank: 45
+  regressor_tlsq_rank: 71
+  seed: 0

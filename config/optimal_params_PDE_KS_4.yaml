@@ -1,0 +1,16 @@
+dataset:
+  name: PDE_KS
+  pair_id:
+  - 4
+model:
+  name: Koopman
+  observables: Identity
+  observables_cat_identity: false
+  observables_float_param: 1.2817460120531423
+  observables_include_state: false
+  observables_int_param: 5
+  observables_rbf_centers_number: 81
+  regressor: EDMD
+  regressor_dmd_rank: 56
+  regressor_tlsq_rank: 54
+  seed: 0

@@ -1,0 +1,16 @@
+dataset:
+  name: PDE_KS
+  pair_id:
+  - 6
+model:
+  name: Koopman
+  observables: TimeDelay
+  observables_cat_identity: false
+  observables_float_param: 1.2616102035593117
+  observables_include_state: false
+  observables_int_param: 1
+  observables_rbf_centers_number: 341
+  regressor: DMD
+  regressor_dmd_rank: 2
+  regressor_tlsq_rank: 50
+  seed: 0
