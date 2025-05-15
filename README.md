@@ -16,9 +16,13 @@ python models/ctf_koopman/run.py models/ctf_koopman/optimal_params_ODE_Lorenz_1.
 python models/ctf_koopman/run.py models/ctf_koopman/optimal_params_PDE_KS_1.yaml
 ```
 
+## Hyperparameter tuning
+
+For hyperparameter tuning use `optimize_parameters.py --config_path tuning_config/config_ODE_Lorenz_1.yaml`. The computational budget can be controlled with the `n_trials` variable as well as with the `--time-budget-hours` flag.
+
 ## Description
 
-PyKoopman learns the Koopman operator and corresponding eigenbasis from a given set of observables and using a chosen regressor. The details of this can be found in [PyKoopman paper](https://doi.org/10.21105/joss.05881) and in the following [SIAM review article](https://doi.org/10.1137/21M1401243).
+PyKoopman learns the Koopman operator and corresponding eigenbasis from a given set of observables and using a chosen regressor. The details of this can be found in the [PyKoopman paper](https://doi.org/10.21105/joss.05881) and in the following [SIAM review article](https://doi.org/10.1137/21M1401243).
 
 ### Configuration Structure
 
@@ -32,19 +36,16 @@ Each configuration file must include the following. The options also highlight w
     - Omitted or `'all'`: Runs on all sub-datasets.
 - **`model`**:
   - `name`: `Koopman`
-  - `observables`: `Identity`, `Polynomial`, `TimeDelay`, `RadialBasisFunctions`, `RandomFourierFeatures`, `ConcatObservables`: Determines the type of observables used;
-  - `observables_cat_identity`: `Bool`: Determines if the above observables are to be concatanated with the identiy;
-  - `observables_poly_degree`: `Int`
-  - `observables_time_delay`: `Int`
-  - `observables_rbf_centers_number`: `Int`
-  - `observables_rbf_kernel_width`: `Float`
-  - `observables_include_state`: `Bool`
-  - `observables_gamma`: `Float`
-  - `observables_D`: `Int`
-
-  - `regressor`: `DMD`, `EDMD`, `HAVOK`, `KDMD`, `NNDMD`
-  - `regressor_dmd_rank`: `Int`
-  - `regressor_tlsq_rank`: `Int`
+  - `observables`: `'Identity'`, `'Polynomial'`, `'TimeDelay'`, `'RadialBasisFunctions'`, `'RandomFourierFeatures'`, `'ConcatObservables'` - Determines the type of observables used;
+  - `observables_cat_identity`: `Bool` - Determines if the above observables are to be concatenated with the identiy;
+  - `observables_int_param`: `Int` - Determines the polynomial degree if `observables='Polynomial'`, the number of timedelay steps if `observables='TimeDelay'` and the parameter `D` if `observables='RandomFourierFeatures'`
+  - `observables_float_param`: `Float` - Determines the RBF kernel width if `observables='RadialBasisFunctions'` and the parameter `gamma` if `observables='RandomFourierFeatures'`;
+  - `observables_rbf_centers_number`: `Int` - Number of RBF kernels if `observables='RadialBasisFunctions'`;
+  - `observables_include_state`: `Bool` - Including the original state space coordinates in the space of observables;
+  
+  - `regressor`: `'DMD'`, `'EDMD'`, `'HAVOK'`, `'KDMD'`, `'NNDMD'`
+  - `regressor_dmd_rank`: `Int` - the truncation rank used in the regressor;
+  - `regressor_tlsq_rank`: `Int` - Rank used in the Total Least Squares (TLSQ) pre-processing step (for de-noising);
 
 Example (`models/ctf_koopman/config/config1_Lorenz.yaml`):
 ```yaml
