@@ -72,7 +72,7 @@ model:
 
 ## Requirements
 
-PyKoopman for CTF relies on the following packages lists in `requirements.txt`:
+PyKoopman for CTF relies on Python@3.10 and the following packages listed in `requirements.txt`:
 - numpy
-- pydmd > 0.4, <= 0.4.1
-- pykoopman
+- pydmd @ 0.4.1
+- pykoopman @ 1.1.0
