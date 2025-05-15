@@ -45,7 +45,7 @@ Each configuration file must include the following. The options also highlight w
   
   - `regressor`: `'DMD'`, `'EDMD'`, `'HAVOK'`, `'KDMD'`, `'NNDMD'`
   - `regressor_dmd_rank`: `Int` - the truncation rank used in the regressor;
-  - `regressor_tlsq_rank`: `Int` - Rank used in the Total Least Squares (TLSQ) pre-processing step (for de-noising);
+  - `regressor_tlsq_rank`: `Int` - Rank used in the Total Least Squares (TLSQ) pre-processing step (for de-noising), this is only available when `regressor='EDMD', 'KDMD'`.
 
 Example (`models/ctf_koopman/config/config1_Lorenz.yaml`):
 ```yaml
