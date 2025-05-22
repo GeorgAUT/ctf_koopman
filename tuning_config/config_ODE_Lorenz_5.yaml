@@ -42,4 +42,4 @@ hyperparameters: # Specify hyperparameters and ranges
     upper_bound: 200
   regressor:
     type: choice
-    choices: ["DMD","EDMD", "HAVOK", "KDMD", "NNDMD"]
+    choices: ["DMD","EDMD", "HAVOK", "KDMD"]

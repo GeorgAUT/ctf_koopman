@@ -6,7 +6,6 @@ model:
   train_split: 0.75   # float in (0.7 and 1.0)
                      # proportion of train data to use for training
   seed: 0
-  n_trials: 50
 hyperparameters: # Specify hyperparameters and ranges
   # Observables parameters
   observables:
@@ -36,11 +35,11 @@ hyperparameters: # Specify hyperparameters and ranges
   regressor_dmd_rank:
     type: randint
     lower_bound: 1
-    upper_bound: 100
+    upper_bound: 200
   regressor_tlsq_rank:
     type: randint
     lower_bound: 1
-    upper_bound: 100
+    upper_bound: 200
   regressor:
     type: choice
-    choices: ["DMD","EDMD"] #, "HAVOK", "KDMD", "NNDMD"]
+    choices: ["DMD","EDMD", "HAVOK", "KDMD"]
