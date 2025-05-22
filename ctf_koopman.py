@@ -98,7 +98,7 @@ class KoopmanModel:
             pkregressor = pk.regression.HAVOK(svd_rank=self.config['model']['regressor_dmd_rank'])
         elif self.config['model']['regressor'] == "KDMD":
             pkregressor = pk.regression.KDMD(svd_rank=self.config['model']['regressor_dmd_rank'],tlsq_rank=self.config['model']['regressor_tlsq_rank'])
-        elif self.config['model']['regressor'] == "NNDMD": #TODO: Check regressor params
+        elif self.config['model']['regressor'] == "NNDMD":
             pkregressor = pk.regression.NNDMD(config_encoder=dict(
                 input_size=self.spatial_dimension+1, hidden_sizes=[self.config['model']['regressor_dmd_rank']] * 2, output_size=6, activations="tanh"),
                 config_decoder=dict(
