@@ -1,0 +1,16 @@
+dataset:
+  name: seismo
+  pair_id:
+  - 9
+model:
+  name: Koopman
+  observables: Identity
+  observables_cat_identity: true
+  observables_float_param: 1.163892628905547
+  observables_include_state: true
+  observables_int_param: 3
+  observables_rbf_centers_number: 669
+  regressor: EDMD
+  regressor_dmd_rank: 79
+  regressor_tlsq_rank: 13
+  seed: 0

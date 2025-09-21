@@ -188,4 +188,4 @@ if __name__ == "__main__":
     # args = parser.parse_args()
     # main("models/ctf_koopman/config/config1_Lorenz.yaml")
     # main("models/ctf_koopman/config/config1_KS.yaml")
-    main("models/ctf_koopman/config/config_ODE_Lorenz_all_optimized.yaml")
+    main("models/ctf_koopman/config/config1_seismo.yaml")
